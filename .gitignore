@@ -4,8 +4,17 @@
 .env.*
 !.env.example
 
--adminsdk-.json
-firebase-adminsdk.json
-service-account.json
+*-adminsdk-*.json
+*firebase-adminsdk*.json
+*service-account*.json
 *.pem
 *.p12
+
+# Firebase emulator artifacts
+firebase-debug.log
+firebase-debug.*.log
+firestore-debug.log
+ui-debug.log
+.firebase/
+/tests
+/scripts

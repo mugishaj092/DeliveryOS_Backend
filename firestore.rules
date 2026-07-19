@@ -2,8 +2,31 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if false;
+
+    match /drivers/{driverId} {
+      allow read: if true;
+
+      // Driver documents are created by scripts/seed_test_data.py via the
+      // Admin SDK, which bypasses rules entirely — clients never create one.
+      allow create: if false;
+
+      // A driver may only self-manage the fields their app actually needs to
+      // update (online toggle, location ping, FCM token refresh). Earnings,
+      // payout, and currentOrderId are exclusively backend-written.
+      allow update: if request.auth != null
+        && request.auth.uid == driverId
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['isOnline', 'location', 'geohash', 'fcmToken']);
+
+      allow delete: if false;
+    }
+
+    match /orders/{orderId} {
+      allow read: if true;
+
+      // No client writes at all — status, assignedDriverId, and every other
+      // field are written exclusively by Cloud Functions via the Admin SDK.
+      allow write: if false;
     }
   }
 }
