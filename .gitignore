@@ -1,0 +1,11 @@
+/context
+
+.env
+.env.*
+!.env.example
+
+-adminsdk-.json
+firebase-adminsdk.json
+service-account.json
+*.pem
+*.p12
