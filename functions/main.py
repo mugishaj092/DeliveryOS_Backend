@@ -85,3 +85,26 @@ def accept_order(req: https_fn.CallableRequest) -> dict:
         return {"success": True}
     except Exception as e:
         return transaction_handlers.handle_accept_failure(e)
+
+
+@https_fn.on_call()
+def update_order_status(req: https_fn.CallableRequest) -> dict:
+    order_id = req.data.get("orderId")
+    driver_id = req.data.get("driverId")
+    status = req.data.get("status")
+    valid_statuses = transaction_handlers.REQUIRED_PRIOR_STATUS
+    if (
+        not isinstance(order_id, str) or not order_id
+        or not isinstance(driver_id, str) or not driver_id
+        or status not in valid_statuses
+    ):
+        return {"success": False, "error": "Missing or invalid orderId, driverId, or status"}
+
+    try:
+        db = firestore.client()
+        order_ref = db.collection("orders").document(order_id)
+        transaction = db.transaction()
+        transaction_handlers.update_order_status_transaction(transaction, order_ref, driver_id, status)
+        return {"success": True}
+    except Exception as e:
+        return transaction_handlers.handle_update_status_failure(e)
